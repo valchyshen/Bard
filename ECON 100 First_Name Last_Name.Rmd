@@ -1,5 +1,5 @@
 ---
-title: "ECON 291 Project"
+title: "ECON 100 Project"
 author: "[First name] [Last name]"
 date: "9/2/2022"
 output: html_document
@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # This is the file provided by the course's instructor, 
 # it contains useful libraries and functions
-source("ECON 291 Tools.R")
+source("ECON 100 Tools.R")
 
 # R libraries are being attached to this project
 library(fredr)         # Fed Reserve Bank of St. Louis, FRED
