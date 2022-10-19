@@ -1,4 +1,3 @@
-
 ## Norway (Example)
 
 Norway is a country with population of 5.4 million. Its major industries are energy (natural gas and crude oil).
@@ -35,7 +34,6 @@ gdp.ts <- ts(t$value/1000,                        # This /1000 is make the data 
 plot(gdp.ts, main = "Real GDP", xlab = "", ylab = "")
 
 ```
-
 
 __Determining the most recent business cycle__
 
