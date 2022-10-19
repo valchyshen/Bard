@@ -1,0 +1,75 @@
+
+## Norway (Example)
+
+Norway is a country with population of 5.4 million. Its major industries are energy (natural gas and crude oil).
+
+Norway's money of account is **Norwegian krone**.
+
+Central Bank of Norway: https://www.norges-bank.no/en/
+
+Ministry of Finance: https://www.regjeringen.no/en/dep/fin/id216/
+
+### History of GDP 
+
+The chart below depicts Norway's gross domestic product data in prices adjusted for inflation, or in "real" terms. FRED website has this data stored under ID: **```CLVMNACSCAB1GQNO```**.
+
+``` {r echo=FALSE}
+
+# The following R code retrieves the quarterly history of real (price-adjusted) volume of GDP
+# of of a certain country/economy. This data series has an ID: CLVMNACSCAB1GQNO
+# Note: you must search for an ID at https://fred.stlouisfed.org/
+t <- 
+  fredr(
+    series_id         = "CLVMNACSCAB1GQNO",
+    observation_start = as.Date("1950-01-01"),    # Enter here the starting date, format: YYYY-MM-DD 
+    observation_end   = Sys.Date()                # By default, today's date is provided here
+  )
+
+# Turning the retrieved GDP data into a time-series GDP (easy-to-handle) data 
+gdp.ts <- ts(t$value/1000,                        # This /1000 is make the data in billions of local money
+             start = c(year(min(t$date)),
+                       as.numeric(sub(quarters(min(t$date)),2,1))), 
+             frequency = 4)
+
+# Plotting the GDP time series data
+plot(gdp.ts, main = "Real GDP", xlab = "", ylab = "")
+
+```
+
+
+__Determining the most recent business cycle__
+
+First step is to observe the chart above and spot two most recent peaks on the chart. Decide approximately after which year did the left-side peak take place. In the case of Norway it is 2007.
+
+Second step is to narrow the time series data on the country's GDP **```gdp.ts```**. And then to build historical tables of (1) values of GDP in "chained" domestic money of account, and (2) real GDP growth rates in % SAAR terms. 
+
+```{r echo=TRUE}
+
+# Narrowing down the times series of the country's GDP adjusted for inflation
+gdp.ts <- window(gdp.ts, start = c(2007,1), frequency = 4)
+
+# GDP values in "chained" local money of account 
+#(adjusted for inflation and seasonality)
+gdp.ts
+
+# Real GDP growth rate, % SAAR
+((gdp.ts/stats::lag(gdp.ts,-1))^4-1)*100 
+
+# Plotting the data set with country's GDP values to spot the peaks
+plot(gdp.ts, 
+     main = "Quarterly GDP, showing most recent business cycle",
+     sub  = "Millions of Norwegian krone, adjusted for inflation and seasonality",
+     xlab = "", 
+     ylab = "")
+
+```
+
+So, Peak #1 is 3Q (October) of 2015 and Peak #2 is 4Q (December) of 2019. Hence, __length of the business cycle is number of months between Oct-2015 and Dec-2019, which is 51 months (see below: 51 = 50 + 1) or 4 years and 1 quarter__. 
+
+```{r echo=TRUE}
+
+# By using R function called interval(), we can obtain the number of 
+# months between two dates
+interval(start = as.Date("2015-10-01"), end = as.Date("2019-12-01")) %/% months(1) + 1
+
+```
