@@ -1,0 +1,174 @@
+## Norway (Example)
+
+Norway is a country with population of 5.4 million. Norway's money of account is **Norwegian krone**. Its major industries are natural gas and crude oil sectors (off-shore drilling), shipping, fishing and timber. There are domestic service sectors ranging from education to healthcare, real trade, etc. Norway's key trading partners are Sweden and the countries of euro-zone (collectively), followed by China, United Kingdom and the United States. About 20 years ago China accounted for a small share of trade in Norway's total foreign trade, now it one of top 5 trade partners.
+
+The country tops the international rankings by such an indicator as GDP per capita (it is calculated as annual volume of gross domestic product denominated in the local money of account divided by size of population). Hence, it's a member of the club of countries which are both industrialized and wealthy. 
+
+Useful links: 
+  
+  * OECD [`https://www.oecd.org/norway/`](https://www.oecd.org/norway/), 
+  * IMF [`https://www.imf.org/en/Countries/NOR`](https://www.imf.org/en/Countries/NOR), 
+  * World Bank [`https://www.worldbank.org/en/country/norway`](https://www.worldbank.org/en/country/norway)
+  * Central Bank of Norway [`https://www.norges-bank.no/en/`](https://www.norges-bank.no/en/)
+  * Ministry of Finance [`https://www.regjeringen.no/en/dep/fin/id216/`](https://www.regjeringen.no/en/dep/fin/id216/)
+
+### History of GDP 
+
+The chart below depicts Norway's gross domestic product data in prices adjusted for inflation, or in "real" terms. FRED website has this data stored under ID: **```CLVMNACSCAB1GQNO```**.
+
+Norway is closely connected to the global economy via the crude oil market, its key exports. Also, thanks to its geographic location, it has great exposure to the business cycle of the eurozone, these are the countries of the European Union that adopted euro as money of account for their economies. Hence, most recent recessions were two global recessions: (1) most recent one was due to COVID-19 lockdown in 2020, and (2) the 2008-09 recession due to the Global Financial Crisis.
+
+``` {r echo=FALSE}
+
+# The following R code retrieves the quarterly history of real (price-adjusted) volume of GDP
+# of of a certain country/economy. This data series has an ID: CLVMNACSCAB1GQNO
+# Note: you must search for an ID at https://fred.stlouisfed.org/
+t <- 
+  fredr(
+    series_id         = "CLVMNACSCAB1GQNO",
+    observation_start = as.Date("1950-01-01"),    # Enter here the starting date, format: YYYY-MM-DD 
+    observation_end   = Sys.Date()                # By default, today's date is provided here
+  )
+
+# Turning the retrieved GDP data into a time-series GDP (easy-to-handle) data 
+gdp.ts <- ts(t$value/1000,                        # This /1000 is make the data in billions of local money
+             start = c(year(min(t$date)),
+                       as.numeric(sub(quarters(min(t$date)),2,1))), 
+             frequency = 4)
+
+# Plotting the GDP time series data
+plot(gdp.ts, main = "Real GDP", xlab = "", ylab = "")
+
+```
+__Determining the most recent business cycle__
+
+First step is to observe the chart above and spot two most recent peaks on the chart. Decide approximately after which year did the left-side peak take place. In the case of Norway it is 2007.
+
+Second step is to narrow the time series data on the country's GDP **```gdp.ts```**. And then to build historical tables of (1) values of GDP in "chained" domestic money of account, and (2) real GDP growth rates in % SAAR terms. 
+
+```{r echo=TRUE}
+
+# Narrowing down the times series of the country's GDP adjusted for inflation
+gdp.ts <- window(gdp.ts, start = c(2007,1), frequency = 4)
+
+# GDP values in "chained" local money of account 
+#(adjusted for inflation and seasonality)
+gdp.ts
+
+# Real GDP growth rate, % SAAR
+((gdp.ts/stats::lag(gdp.ts,-1))^4-1)*100 
+
+# Plotting the data set with country's GDP values to spot the peaks
+plot(gdp.ts, 
+     main = "Quarterly GDP, showing most recent business cycle",
+     sub  = "Millions of Norwegian krone, adjusted for inflation and seasonality",
+     xlab = "", 
+     ylab = "")
+
+```
+
+So, Peak #1 is 3Q (October) of 2015 and Peak #2 is 4Q (December) of 2019. Hence, __length of the business cycle is number of months between Oct-2015 and Dec-2019, which is 51 months (see below: 51 = 50 + 1) or 4 years and 1 quarter__. 
+
+```{r echo=TRUE}
+
+# By using R function called interval(), we can obtain the number of 
+# months between two dates
+interval(start = as.Date("2015-10-01"), end = as.Date("2019-12-01")) %/% months(1) + 1
+
+```
+
+## Employment
+
+Norway's employment data:
+
+* FRED: `LRUN74TTNOQ156S` is an ID for unemployment rate
+* FRED: `LRAC74TTNOQ156S` is an ID for active population rate (labor participation rate)
+* OECD data: https://data.oecd.org/emp/labour-force-participation-rate.htm
+
+The data on the labor market for Norway shows that recovery from the COVID-19 recession was underway as unemployment rate dropped to 3.5% in 3Q 2022 from ~5% in late 2020. While labor participation rate improved noticeably to reach 73% from the pre-COVID lows of ~70%. There must be some government policy that created such a turnaround in the labor market, and especially right after lockdowns were phased out and mass vaccination took place. (Note: the OECD data, see link above, shows an even higher labor force participation rate in Norway: at ~80%.)
+
+```{r echo=FALSE}
+
+# Unemployment rate (%)
+t <- 
+  fredr(
+    series_id         = "LRUN74TTNOQ156S",
+    observation_start = as.Date("1950-01-01"),
+    observation_end   = Sys.Date()
+  )
+ts <- ts(t$value, start = c(year(min(t$date)),month(min(t$date))), frequency = 4)
+# Chart on all-time history of inflation
+plot(ts, main = "All-Time History of Unemployment Rate", 
+     xlab = "", ylab = "(% of labor force)", sub = "")
+
+# Labor force participation rate (%)
+t <- 
+  fredr(
+    series_id         = "LRAC74TTNOQ156S",
+    observation_start = as.Date("1950-01-01"),
+    observation_end   = Sys.Date()
+  )
+ts <- ts(t$value, start = c(year(min(t$date)),month(min(t$date))), frequency = 4)
+# Chart on all-time history of inflation
+plot(ts, main = "All-Time History of Labor Force Participation Rate", 
+     xlab = "", ylab = "(% of population)", sub = "")
+
+```
+
+## Inflation
+
+The Fred ID for the country's inflation is `NORCPIALLMINMEI` (this is an index data, not year-on-year percentage change data).
+
+Norway's consumer price inflation took off in early 2021, following the global trend. The country's central bank adheres to inflation targeting regim, under which its the policy is focused at keeping inflation at low level and stable. Thus, the official statement by the central bank is: "The monetary policy target is annual consumer price inflation of close to 2 percent over time." (source: https://www.norges-bank.no/en/topics/Monetary-policy/Inflation/). The monthly pace of consumer price inflation (in year-on-year terms) was already higher than 2% target in early 2021. Inflation accelerated into 4-5% range by the end of 2021 and stayed in that range all year long in 2022. Under the inflation targeting regime, the central bank acts by raising the level of the interest rate policy target. The economic theory says that central bank's actions on increasing the interest rate aimed at suppressing aggregated demand (AD). Recall the AS/AD graph, where AD curve forced to move left and down along the unchanged AS curve, pushing equilibrium to a point where inflation is at lower level than it was previously. Now, take a look at the next section, which is about the history of the central bank's changes in the interest rate policy target.
+
+```{r echo=FALSE}
+t <- 
+  fredr(
+    series_id         = "NORCPIALLMINMEI",
+    observation_start = as.Date("1950-01-01"),
+    observation_end   = Sys.Date()
+  )
+ts <- ts(t$value, start = c(year(min(t$date)),month(min(t$date))), frequency = 12)
+ts <- (ts/stats::lag(ts,-12)-1)*100
+# Chart on all-time history of inflation
+plot(ts, main = "All-Time History of Inflation", 
+     xlab = "", ylab = "(year-on-year % change)", 
+     sub = "Inflation is measured by consumer price pndex")
+# Chart on last 12-month history of inflation
+plot(window(ts, start=end(ts)-1), main = "Last 12-Month History of Inflation", 
+     xlab = "", ylab = "(year-on-year % change)", 
+     sub = "Inflation is measured by consumer price pndex")
+
+```
+
+## Interest rate target and the central bank's corridor system
+
+The chart below shows the central bank's corridor system -- this is the system that guides the inter-bank market, where commercial banks trade reserves (IOUs of the central bank) between themselves. Some commercial banks need reserves and they borrow them from other commercial banks. Some banks have excess reserves and they lend them to other banks. The price of borrowing/lending is interest rate. The term of borrowing in this market ranges from one day (called overnight) to one week or several weeks, but normally the most popular term is overnight. The rule is the shorter the term, the lower the rate. The central bank guides this market because it's the monoploy provide of reserves (they are IOUs of the central bank, no other entity in the economy is able to provide them). And it guides it by establishing two rates: (1) the deposit rate and (2) the lending rate. The former is the lower boundary of the corridor (or the floor rate), the latter is higher boundary of the corridor (the ceiling rate). Without such boundaries the inter-bank market will experience time to time quite erratic, out-sized volatility in the overnight rate -- they would drop to zero when nobody needs reserves or they would spike into the high double digits when all/most banks need them at the same time. To avoid this outcome, there is a corridor system in place. The policy rate or it's called, too, as the target rate is located by the central bank inside the corridor, i.e. between the floor rate and ceiling rate. It might be located right in the middle of those two rates (the floor and ceiling). Or it might be located differently, for example closer to or right at the floor rate. 
+
+Norway's central bank since 2000 through today has had it as depicted below. The lower rate (in light blue color) is the floor rate or deposit rate and the higher rate (light blue colored) is the lending rate or ceiling rate. As of today, it has a policy rate of 2.5% (black line). The floor rate is, too, 2.5% and the ceiling rate is 3.5% (both are light blue lines). The overnight inter-bank market rate called **NOWA** (Norwegian Overnight Weighted Average) has been exactly at the target rate recently. This graph shows that overnight rate has been on target most of the time (there were occasional short-lived spikes, which must be due to end of reporting period demand from bank for reserves). Also, it has been inside the central bank corridor, which has been moving up and down according to the central bank policy of inflation targeting. Over 2021-22, consumer inflation rose from 3% towards 6%. In attempt to influence aggregate demand downward, the central bank moved the policy rate from zero to 2.5% via several step-up increases. As inflation recently was going up (not down), it appears that Norway's central bank might be continuing with policy rate increase early 2023.
+
+```{r echo=FALSE}
+
+#ir.corridor.ca("1990-01-01")
+#ir.corridor.us("1990-01-01")
+#ir.corridor.mx("1990-01-01")
+#ir.corridor.tr("1990-01-01")
+
+```
+
+## Interest rates derived from the market where government bonds are traded
+
+In addition to the overnight inter-bank market rate, there are other interest rates in the economy. The most followed rates are those that are derived from the bond market, where government bonds of different maturities are bought and sold. Government bond have maturities from 3 month to 10 years and in some countries up to 20,30, and 50 years. If a government issues bonds denominated in the own, national money unit of account, then such securities are exposed to the interest rate risk and much less exposed to credit risk. These two risks are very common to financial instruments in general. The interest risk comes from inverse mathematical relationship between price of financial instrument and market interest rates. If interest rates rise then bond prices decline. The credit risk comes from bond issuer's possible deterioration of the ability to pay upon own commitments.
+
+The chart below depicts the history of interest rates (called yields) that are derived from the government bond market in Norway. The structure of interest rates in this country includes rates on the government bonds with maturities from 0.25 year (3 months) to 10 years. Note: bond maturity is a period of time after which the bond issuer pays back to the bond holder the funds borrowed. The available data on the bond rates from early 2022 through today is available as a daily range, which is depicted as gray shaded area (not as colored lines). The history of rates before 2022 presented as colored lines. As it is shown below the rates on short-term bonds (from 0.25 year through 1-2 years) quite closely follow the policy rate target. For example, with today's policy rate target of 2.5% the short term bond rates are between 2.5% and 3%. In the COVID-19 recession the target policy rate was zero and the short-term bond rates were down close to the range of 0-0.5%. The long-term bond rates are experiencing greater divergence from the short-term bond rates -- in some periods they are higher than the short-term bond rates, in other periods their difference with short-term rates is much smaller or even zero or negative (long-term bond rates are lower than short-term bond rates). In finance, that difference between the short-term and long-term bond rates is called the shape of yield curve (also, it's called term structure of interest rates).  
+
+Given the above-mentioned dynamics (inflation inching up still despite past interest rates increase, low unemployment and positive real GDP growth rates), going forward Norway's central bank is most likely to continue raising policy rate target in early 2023. Hence, bond rates (especially, of the short-term bonds) are to inch higher. This means that bond prices are likely to decline going forward.
+
+```{r echo=FALSE}
+
+#ir.govt.ca("1990-01-01")
+#ir.govt.us("1990-01-01")
+#ir.govt.mx("1990-01-01")
+#ir.govt.tr("1990-01-01")
+
+```
