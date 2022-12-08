@@ -5,7 +5,7 @@
 #
 
 # ------------------------  LIST OF FUNCTIONS ----------------------------------+
-  
+
 #  1. use.library(p)   -- if library p is not installed it is being installed
 #  2. bls.cpi.idx(b,r) -- transforms BLS data set into a data frame into a 
 #                         user-friendly format, where CPI is index
@@ -567,16 +567,16 @@ ir.corridor.tr <- function(d) {
   #n <- t$midTable[1,] # names of columns
   #d <- t$midTable[c(2:nrow(t$midTable)),]
   #colnames(d) <- n
-  d<-t$midTable
+  d<-t$midTable; d<-d[-1,]
   d$DATE <- as.Date(d$DATE, format = "%d.%m.%Y")
-  d$Borrowing <- as.numeric(sub("-","",d$Borrowing))
+  #d$Borrowing <- as.numeric(sub("-","",d$Borrowing))
   d$Lending <- as.numeric(sub(",",".",d$Lending))
   head(d);tail(d)
   
   #tcmb.rates <- rbind(tcmb.rates,
   #                    daily.hist(d$DATE,d$Borrowing,"1W Repo (reverse)"))
   tcmb.rates <- rbind(tcmb.rates,
-                      daily.hist(d$DATE,d$Lending,"1W Repo"))
+                      daily.hist(na.omit(d$DATE),na.omit(d$Lending),"1W Repo"))
   
   # O/N Money-Market Rate --------------------------------------------------------+
   
@@ -599,7 +599,7 @@ ir.corridor.tr <- function(d) {
   #tmp <- tempfile()
   tmp <- "TLREFORANI_D.zip"
   download.file(u, destfile=tmp, method="curl")
-  unzip(tmp, exdir = ".")
+  unzip(tmp) #, exir = ".")
   t <- read.csv(file = "TLREFORANI_D.csv", header = TRUE, sep = ";", skipNul = TRUE, 
                 colClasses = "character", fileEncoding = "latin1")
   unlink(tmp)
@@ -607,6 +607,7 @@ ir.corridor.tr <- function(d) {
                    "no_of_deals","no_of_active_cntprts","elgbl_trz_vlm","elgbl_no_of_deals",
                    "elgbl_trz_act_cntprts","rate_first15pctl_trdvlm","rate_last15pctl_trdvlm")
   t$date <- as.Date(t$date, format = "%d/%m/%Y")
+  t$value <- as.numeric(t$value)
   t <- na.omit(t)
   head(t);tail(t)
   tcmb.rates <- rbind(tcmb.rates,
@@ -673,7 +674,6 @@ ir.corridor.tr <- function(d) {
                      yend = tcmb.rates[tcmb.rates$ind=="1W Repo" & 
                                          tcmb.rates$date==as.Date("2021-06-25"),]$value/100), 
                  color="black", size=0.3, arrow = arrow(length = unit(0.15, "cm")))
-  
   
   return(g)
 }
@@ -1320,7 +1320,7 @@ ir.govt.tr <- function(d) {
   #n <- t$midTable[1,] # names of columns
   #d <- t$midTable[c(2:nrow(t$midTable)),]
   #colnames(d) <- n
-  d<-t$midTable
+  d<-t$midTable; d<-d[-1,]
   d$DATE <- as.Date(d$DATE, format = "%d.%m.%Y")
   d$Borrowing <- as.numeric(sub("-","",d$Borrowing))
   d$Lending <- as.numeric(sub(",",".",d$Lending))
@@ -1329,7 +1329,7 @@ ir.govt.tr <- function(d) {
   #tcmb.rates <- rbind(tcmb.rates,
   #                    daily.hist(d$DATE,d$Borrowing,"1W Repo (reverse)"))
   tcmb.rates <- rbind(tcmb.rates,
-                      daily.hist(d$DATE,d$Lending,"1W Repo"))
+                      daily.hist(na.omit(d$DATE),na.omit(d$Lending),"1W Repo"))
   tcmb.rates$value <- tcmb.rates$value/100
   
   # https://drive.google.com/file/d/1MAYh2-V7Wo-vVqnv_SqT3bhBiKqwAxBs/view?usp=sharing
